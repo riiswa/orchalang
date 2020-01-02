@@ -7,13 +7,14 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import java.io.File
 
 @SpringBootApplication
 class DemoApplication{
 
 	@Bean
 	fun init(orchaCompiler: OrchaCompiler) = CommandLineRunner {
-		orchaCompiler . compile("orchaCompiler.orcha")
+		orchaCompiler . compile(File("src/main/orcha/source").list()[0])
 	}
 
 }
