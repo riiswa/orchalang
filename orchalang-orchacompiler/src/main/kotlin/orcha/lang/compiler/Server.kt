@@ -10,7 +10,6 @@ import java.util.stream.Collectors
 
 fun inputStreamToString(inputStream: InputStream): String {
     val isReader = InputStreamReader(inputStream)
-    //Creating a BufferedReader object
     val reader = BufferedReader(isReader)
     return reader.lines().collect(Collectors.joining())
 }
@@ -34,12 +33,16 @@ fun cleanDirectory(dir: File) {
     for (file in dir.listFiles()) file.delete()
 }
 
-
 fun main(args: Array<String>) {
     HttpServer.create(InetSocketAddress(8080), 0).apply {
-        createContext("/orcha") { http ->
+        createContext("/api/orcha") { http ->
+            http.responseHeaders.add("Access-Control-Allow-Origin", "*")
+            http.responseHeaders.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, reponseType");
+            http.responseHeaders.add("Access-Control-Allow-Credentials", "true")
+            http.responseHeaders.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,HEAD")
             val directory = "src/main/orcha/source/"
-            val params = getQueryMap(decodeURL(inputStreamToString(http.requestBody)))
+            val decodedRequest = decodeURL(inputStreamToString(http.requestBody))
+            val params = getQueryMap(decodedRequest)
             if (params.containsKey("fileName") && params.containsKey("fileContent")) {
                 cleanDirectory(File(directory))
                 val out = PrintWriter(directory + params["fileName"])
@@ -57,7 +60,6 @@ fun main(args: Array<String>) {
                     System.out.flush()
                     System.setOut(old)
                 }
-                http.responseHeaders.add("Content-type", "text/plain")
                 http.sendResponseHeaders(200, 0)
 
                 PrintWriter(http.responseBody).use { out ->
@@ -65,10 +67,9 @@ fun main(args: Array<String>) {
                 }
             } else {
                 http.responseHeaders.add("Content-type", "text/plain")
-                http.sendResponseHeaders(422, 0)
+                http.sendResponseHeaders(420, 0)
             }
         }
-
         start()
     }
 }
